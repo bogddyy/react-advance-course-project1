@@ -1,0 +1,46 @@
+.user-add-form {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  background-color: transparent;
+}
+
+.user-add-form h2 {
+  color: blue;
+  text-align: center;
+}
+
+.user-add-form label {
+  margin-top: 10px;
+}
+
+.user-add-form input[type="text"],
+.user-add-form input[type="email"] {
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.user-add-form input[type="checkbox"] {
+  margin-top: 10px;
+}
+
+.user-add-form input[type="submit"] {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: green;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.user-add-form input[type="submit"]:hover {
+  background-color: darkgreen;
+}
