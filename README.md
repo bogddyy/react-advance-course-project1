@@ -1,4 +1,4 @@
-Functionalitati
+
 TODO: Add functionalities description
 
 Pentru a rula local proiectul
