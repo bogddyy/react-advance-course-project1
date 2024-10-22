@@ -1,8 +1,9 @@
 import React from "react";
 import "./App.css";
-import UserAddForm from "./components/UserAddForm";
-import UserList from "./components/UserList";
-import PostList from "./components/PostList";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Home from "./components/pages/Home";
+import About from "./components/pages/About";
+import NotFound from "./components/pages/NotFound";
 
 class App extends React.Component {
   constructor() {
@@ -31,20 +32,19 @@ class App extends React.Component {
             "+"
           )}&size=256&background=random&color=fff`;
         });
-
         this.setState({ users });
       });
   }
 
-  changeColor(event) {
+  changeColor = (event) => {
     const userBackground = event.target.value;
     this.setState({ background: userBackground });
-  }
+  };
 
-  changeColorText(event) {
+  changeColorText = (event) => {
     const userColor = event.target.value;
     this.setState({ color: userColor });
-  }
+  };
 
   getMaxId(users) {
     let maxId = 0;
@@ -53,39 +53,30 @@ class App extends React.Component {
         maxId = user.id;
       }
     });
-
     return maxId;
   }
 
-  submitAddForm(event, name, email, isGoldClient) {
+  submitAddForm = (event, name, email, isGoldClient) => {
     event.preventDefault();
-
-    // Construieste URL-UL avatar-ului
     const avatarUrl = `https://ui-avatars.com/api/?name=${name.replace(
       " ",
       "+"
     )}&size=256&background=random&color=fff`;
-
-    // Genereaza un salariu random
     const randomSalary = Math.floor(Math.random() * 3000) + 3000;
-
-    // Adaugăm noul utilizator în lista de utilizatori
-    this.setState((prevState) => {
-      return {
-        users: [
-          ...prevState.users,
-          {
-            id: this.getMaxId(prevState.users) + 1,
-            name,
-            email,
-            isGoldClient,
-            salary: randomSalary,
-            profilePicture: avatarUrl,
-          },
-        ],
-      };
-    });
-  }
+    this.setState((prevState) => ({
+      users: [
+        ...prevState.users,
+        {
+          id: this.getMaxId(prevState.users) + 1,
+          name,
+          email,
+          isGoldClient,
+          salary: randomSalary,
+          profilePicture: avatarUrl,
+        },
+      ],
+    }));
+  };
 
   deleteUser = (userId) => {
     this.setState((prevState) => ({
@@ -93,7 +84,7 @@ class App extends React.Component {
     }));
   };
 
-  toggleView(view) {
+  toggleView = (view) => {
     if (view === "posts" && !this.state.postsLoaded) {
       fetch("https://jsonplaceholder.typicode.com/posts")
         .then((response) => response.json())
@@ -105,48 +96,46 @@ class App extends React.Component {
           });
         });
     }
-
     this.setState({ showUsers: view === "users" });
-  }
-
-  updateUsersList(user) {
-    this.setState((previousState) => {
-      return {
-        users: [...previousState.users, user],
-      };
-    });
-  }
+  };
 
   render() {
     return (
-      <div
-        className="App"
-        style={{ background: this.state.background, color: this.state.color }}
-      >
-        <h1>Admin panel - Proiectul 1</h1>
-        <button onClick={() => this.toggleView("users")}>Afișează useri</button>
-        <button onClick={() => this.toggleView("posts")}>
-          Afișează postări
-        </button>
-        <label>Alege culoarea de fundal:</label>
-        <input type="color" onChange={(event) => this.changeColor(event)} />
-        <label>Alege culoarea textului:</label>
-        <input type="color" onChange={(event) => this.changeColorText(event)} />
-        <UserAddForm
-          submitAddForm={(event, name, email, isGoldClient) =>
-            this.submitAddForm(event, name, email, isGoldClient)
-          }
-        />
-        {this.state.showUsers ? (
-          <UserList
-            // Transmiterea funcției de ștergere
-            onDeleteUser={this.deleteUser}
-            users={this.state.users}
-          />
-        ) : (
-          <PostList posts={this.state.posts} />
-        )}
-      </div>
+      <Router>
+        <div
+          style={{ backgroundColor: this.state.background, minHeight: "100vh" }}
+        >
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Home
+                  users={this.state.users}
+                  posts={this.state.posts}
+                  onAddUser={this.submitAddForm}
+                  onDeleteUser={this.deleteUser}
+                  background={this.state.background}
+                  color={this.state.color}
+                  changeColor={this.changeColor}
+                  changeColorText={this.changeColorText}
+                  showUsers={this.state.showUsers}
+                  toggleView={this.toggleView}
+                />
+              }
+            />
+            <Route
+              path="/about"
+              element={
+                <About
+                  background={this.state.background}
+                  color={this.state.color}
+                />
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+      </Router>
     );
   }
 }
