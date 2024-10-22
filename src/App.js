@@ -10,10 +10,14 @@ class App extends React.Component {
     super();
     const savedBackground = localStorage.getItem("background") || "white";
     const savedColor = localStorage.getItem("color") || "black";
+
+    // Încarcă utilizatorii din localStorage
+    const savedUsers = JSON.parse(localStorage.getItem("users")) || [];
+
     this.state = {
       background: savedBackground,
       color: savedColor,
-      users: [],
+      users: savedUsers,
       posts: [],
       showUsers: true,
       postsLoaded: false,
@@ -21,21 +25,31 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    // Fetch la useri
-    fetch("https://jsonplaceholder.typicode.com/users")
-      .then((response) => response.json())
-      .then((users) => {
-        users = users.filter((user) => user.id <= 8);
-        users.forEach((user) => {
-          user.isGoldClient = false;
-          user.salary = Math.floor(Math.random() * 3000) + 3000;
-          user.profilePicture = `https://ui-avatars.com/api/?name=${user.name.replace(
-            " ",
-            "+"
-          )}&size=256&background=random&color=fff`;
+    // Fetch la useri doar dacă nu există deja în localStorage
+    const savedUsers = JSON.parse(localStorage.getItem("users")) || [];
+
+    if (savedUsers.length === 0) {
+      fetch("https://jsonplaceholder.typicode.com/users")
+        .then((response) => response.json())
+        .then((users) => {
+          users = users.filter((user) => user.id <= 8);
+          users.forEach((user) => {
+            user.isGoldClient = false;
+            user.salary = Math.floor(Math.random() * 3000) + 3000;
+            user.profilePicture = `https://ui-avatars.com/api/?name=${user.name.replace(
+              " ",
+              "+"
+            )}&size=256&background=random&color=fff`;
+          });
+
+          // Salvează utilizatorii în localStorage
+          localStorage.setItem("users", JSON.stringify(users));
+
+          this.setState({ users });
         });
-        this.setState({ users });
-      });
+    } else {
+      this.setState({ users: savedUsers });
+    }
   }
 
   changeColor = (event) => {
@@ -67,25 +81,38 @@ class App extends React.Component {
       "+"
     )}&size=256&background=random&color=fff`;
     const randomSalary = Math.floor(Math.random() * 3000) + 3000;
-    this.setState((prevState) => ({
-      users: [
-        ...prevState.users,
-        {
-          id: this.getMaxId(prevState.users) + 1,
-          name,
-          email,
-          isGoldClient,
-          salary: randomSalary,
-          profilePicture: avatarUrl,
-        },
-      ],
-    }));
+
+    const newUser = {
+      id: this.getMaxId(this.state.users) + 1,
+      name,
+      email,
+      isGoldClient,
+      salary: randomSalary,
+      profilePicture: avatarUrl,
+    };
+
+    this.setState(
+      (prevState) => ({
+        users: [...prevState.users, newUser],
+      }),
+      () => {
+        // Salvează utilizatorii în localStorage
+        localStorage.setItem("users", JSON.stringify(this.state.users));
+      }
+    );
   };
 
   deleteUser = (userId) => {
-    this.setState((prevState) => ({
-      users: prevState.users.filter((user) => user.id !== userId),
-    }));
+    this.setState((prevState) => {
+      const updatedUsers = prevState.users.filter((user) => user.id !== userId);
+
+      // Actualizăm localStorage cu utilizatorii rămași
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+      return {
+        users: updatedUsers,
+      };
+    });
   };
 
   toggleView = (view) => {
@@ -93,7 +120,7 @@ class App extends React.Component {
       fetch("https://jsonplaceholder.typicode.com/posts")
         .then((response) => response.json())
         .then((json) => {
-          const filteredJson = json.filter((post) => post.id <= 10);
+          const filteredJson = json.filter((post) => post.id <= 8);
           this.setState({
             posts: filteredJson,
             postsLoaded: true,
