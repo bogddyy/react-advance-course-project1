@@ -8,9 +8,11 @@ import NotFound from "./components/pages/NotFound";
 class App extends React.Component {
   constructor() {
     super();
+    const savedBackground = localStorage.getItem("background") || "white";
+    const savedColor = localStorage.getItem("color") || "black";
     this.state = {
-      background: "white",
-      color: "black",
+      background: savedBackground,
+      color: savedColor,
       users: [],
       posts: [],
       showUsers: true,
@@ -39,11 +41,13 @@ class App extends React.Component {
   changeColor = (event) => {
     const userBackground = event.target.value;
     this.setState({ background: userBackground });
+    localStorage.setItem("background", userBackground); // Salvează culoarea de fundal
   };
 
   changeColorText = (event) => {
     const userColor = event.target.value;
     this.setState({ color: userColor });
+    localStorage.setItem("color", userColor); // Salvează culoarea textului
   };
 
   getMaxId(users) {
@@ -103,7 +107,11 @@ class App extends React.Component {
     return (
       <Router>
         <div
-          style={{ backgroundColor: this.state.background, minHeight: "100vh" }}
+          style={{
+            backgroundColor: this.state.background,
+            minHeight: "100vh",
+            color: this.state.color,
+          }}
         >
           <Routes>
             <Route
@@ -123,15 +131,7 @@ class App extends React.Component {
                 />
               }
             />
-            <Route
-              path="/about"
-              element={
-                <About
-                  background={this.state.background}
-                  color={this.state.color}
-                />
-              }
-            />
+            <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
